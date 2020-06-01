@@ -37,6 +37,7 @@ import com.mathias.whatsapp.adapter.MensagensAdapter;
 import com.mathias.whatsapp.config.configuracaoFirebase;
 import com.mathias.whatsapp.helper.Base64Custom;
 import com.mathias.whatsapp.helper.UsuarioFirebase;
+import com.mathias.whatsapp.model.Conversa;
 import com.mathias.whatsapp.model.Mensagem;
 import com.mathias.whatsapp.model.Usuario;
 
@@ -232,12 +233,26 @@ public class ChatActivity extends AppCompatActivity {
             //Salvar mensagem para o destinatario
             SalvarMensagem(idUsuarioDestinatario,idUsuarioRemetente,mensagem);
 
+            //Salvar conversa
+            salvarConversa(mensagem);
+
 
         } else {
             Toast.makeText(ChatActivity.this,
                     "Digite uma mensagem para enviar",
                     Toast.LENGTH_LONG).show();
         }
+
+    }
+
+    private void salvarConversa(Mensagem msg) {
+        Conversa conversaRemetente = new Conversa();
+        conversaRemetente.setIdRemetente(idUsuarioRemetente);
+        conversaRemetente.setIdDestinatario(idUsuarioDestinatario);
+        conversaRemetente.setUltimaMensagem(msg.getMensagem());
+        conversaRemetente.setUsuarioExibicao(usuarioDestinatario);
+
+        conversaRemetente.salvar();
 
     }
 
