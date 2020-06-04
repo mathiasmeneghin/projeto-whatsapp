@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import com.mathias.whatsapp.model.Conversa;
 import com.mathias.whatsapp.model.Usuario;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -102,7 +104,7 @@ public class ConversasFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        RecuperarConversas();
+        recuperarConversas();
     }
 
     @Override
@@ -111,7 +113,29 @@ public class ConversasFragment extends Fragment {
         conversasRef.removeEventListener(childEventListenerConversas);
     }
 
-    public void RecuperarConversas() {
+    public void pesquisarCoversas(String texto) {
+        //Log.d("pesquisa",texto);
+        List<Conversa> listaConversasBusca = new ArrayList<>();
+        for (Conversa conversa : listaConversas) {
+            String nome = conversa.getUsuarioExibicao().getNome().toLowerCase();
+            String ultimaMsg = conversa.getUltimaMensagem().toLowerCase();
+            if (nome.contains(texto) || ultimaMsg.contains(texto)) {
+                listaConversasBusca.add(conversa);
+            }
+
+        }
+       adapter = new ConversasAdapter(listaConversasBusca,getActivity());
+        recyclerViewConversas.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void recarregarConversas() {
+        adapter = new ConversasAdapter(listaConversas,getActivity());
+        recyclerViewConversas.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void recuperarConversas() {
 
 
       childEventListenerConversas =  conversasRef.addChildEventListener(new ChildEventListener() {

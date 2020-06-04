@@ -8,6 +8,7 @@ import androidx.viewpager.widget.ViewPager;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,6 +19,7 @@ import com.mathias.whatsapp.R;
 import com.mathias.whatsapp.config.configuracaoFirebase;
 import com.mathias.whatsapp.fragment.ContatosFragment;
 import com.mathias.whatsapp.fragment.ConversasFragment;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
@@ -26,6 +28,7 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth autenticacao;
+    private MaterialSearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // configurar abas
-        FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
+        final FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getSupportFragmentManager(),
                 FragmentPagerItems.with(this)
                 .add("Conversas", ConversasFragment.class)
@@ -52,6 +55,42 @@ public class MainActivity extends AppCompatActivity {
 
         SmartTabLayout ViewPagerTab = findViewById(R.id.viewPagerTab);
         ViewPagerTab.setViewPager(viewPager);
+
+        //Configuracao do searchV iew
+        searchView = findViewById(R.id.materialSerchPrincipal);
+        //Listener para o serach View
+        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+
+            }
+
+            @Override
+            public void onSearchViewClosed() {
+                ConversasFragment fragment = (ConversasFragment) adapter.getPage(0);
+                fragment.recarregarConversas();
+            }
+        });
+
+        //Listener para caixa de texto
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+               // Log.d("evento","onQueryTextSubmit");
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+               // Log.d("evento","onQueryTextChange");
+                ConversasFragment fragment = (ConversasFragment) adapter.getPage(0);
+                if (newText != null && !newText.isEmpty()) {
+                    fragment.pesquisarCoversas(newText.toLowerCase());
+
+                }
+                return true;
+            }
+        });
     }
 
 
@@ -59,6 +98,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main,menu);
+
+        //Configurar botao pesquisa
+        MenuItem item = menu.findItem(R.id.menuPesquisa);
+        searchView.setMenuItem(item);
 
         return super.onCreateOptionsMenu(menu);
     }

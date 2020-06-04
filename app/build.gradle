@@ -52,6 +52,9 @@ dependencies {
     //dependencias imagem circular
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
+    //dependencias para Material search View
+    implementation 'com.miguelcatalan:materialsearchview:1.4.0'
+
     //Optional: see how to use the utility.
     implementation 'com.ogaclejapan.smarttablayout:utils-v4:2.0.0@aar'
 
