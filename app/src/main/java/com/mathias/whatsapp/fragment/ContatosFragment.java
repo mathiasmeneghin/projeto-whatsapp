@@ -19,6 +19,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.mathias.whatsapp.R;
 import com.mathias.whatsapp.activity.ChatActivity;
+import com.mathias.whatsapp.activity.GrupoActivity;
 import com.mathias.whatsapp.adapter.ContatosAdapter;
 import com.mathias.whatsapp.config.configuracaoFirebase;
 import com.mathias.whatsapp.helper.RecyclerItemClickListener;
@@ -74,9 +75,20 @@ public class ContatosFragment extends Fragment {
                             @Override
                             public void onItemClick(View view, int position) {
                                 Usuario usuarioSelecionado = listaContatos.get(position);
-                                Intent i = new Intent(getActivity(), ChatActivity.class);
-                                i.putExtra("chatContato",usuarioSelecionado);
-                                startActivity(i);
+                                boolean cabecalho = usuarioSelecionado.getEmail().isEmpty();
+
+                                if (cabecalho) {
+                                    Intent i = new Intent(getActivity(), GrupoActivity.class);
+                                    startActivity(i);
+
+                                } else {
+                                    Intent i = new Intent(getActivity(), ChatActivity.class);
+                                    i.putExtra("chatContato",usuarioSelecionado);
+                                    startActivity(i);
+
+                                }
+
+
                             }
 
                             @Override
@@ -91,6 +103,15 @@ public class ContatosFragment extends Fragment {
                         }
                 )
         );
+        /*
+        Define usuário com e-mail vazio
+        Em caso de email vazio o usuario será usado como cabeçalho, exibindo novo grupo
+         */
+        Usuario itemGrupo = new Usuario();
+        itemGrupo.setNome("Novo Grupo");
+        itemGrupo.setEmail("");
+
+        listaContatos.add(itemGrupo);
 
 
         return view;
