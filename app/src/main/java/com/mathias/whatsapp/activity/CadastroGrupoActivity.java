@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +28,7 @@ import com.google.firebase.storage.UploadTask;
 import com.mathias.whatsapp.R;
 import com.mathias.whatsapp.adapter.GrupoSelecionadoAdapter;
 import com.mathias.whatsapp.config.configuracaoFirebase;
+import com.mathias.whatsapp.helper.UsuarioFirebase;
 import com.mathias.whatsapp.model.Grupo;
 import com.mathias.whatsapp.model.Usuario;
 
@@ -46,6 +48,8 @@ public class CadastroGrupoActivity extends AppCompatActivity {
     private static final int SELECAO_GALERIA = 200;
     private StorageReference storageReference;
     private Grupo grupo;
+    private FloatingActionButton fabSalvarGrupo;
+    private EditText editNomeGrupo;
 
 
     @Override
@@ -62,6 +66,8 @@ public class CadastroGrupoActivity extends AppCompatActivity {
         recyclerMembrosSelecionados = findViewById(R.id.recyclerMembrosGrupo);
         imageGrupo = findViewById(R.id.imageGrupo);
         storageReference = configuracaoFirebase.getFirebaseStorage();
+        fabSalvarGrupo = findViewById(R.id.fabSalvarGrupo);
+        editNomeGrupo = findViewById(R.id.editNomeGrupo);
         grupo = new Grupo();
 
         //Configurar evento de clique
@@ -75,14 +81,7 @@ public class CadastroGrupoActivity extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton fab = findViewById(R.id.fabAvancarCadastro);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // Recuperar lista de mebros passada
         if (getIntent().getExtras() != null) {
@@ -99,6 +98,20 @@ public class CadastroGrupoActivity extends AppCompatActivity {
         recyclerMembrosSelecionados.setLayoutManager(layoutManagerHorizontal);
         recyclerMembrosSelecionados.setHasFixedSize(true);
         recyclerMembrosSelecionados.setAdapter(grupoSelecionadoAdapter);
+
+        //Configurar floatin action Button
+        fabSalvarGrupo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               String nomeGrupo = editNomeGrupo.getText().toString();
+               //Adiciona à lista de membros o usuario que esta logado
+               listaMembrosSelecionados.add(UsuarioFirebase.getDadosUsuarioLogado());
+               grupo.setMembros(listaMembrosSelecionados);
+               grupo.setNome(nomeGrupo);
+               grupo.salvar();
+
+            }
+        });
 
     }
 

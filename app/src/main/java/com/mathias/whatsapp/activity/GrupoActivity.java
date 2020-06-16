@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -64,7 +63,7 @@ public class GrupoActivity extends AppCompatActivity {
         //Configuracoes iniciais
         recyclerMembros = findViewById(R.id.recyclerMembros);
         recyclerMembrosSelecionados = findViewById(R.id.recyclerMembrosSelecionados);
-        fabAvancarCadastro = findViewById(R.id.fabAvancarCadastro);
+        fabAvancarCadastro = findViewById(R.id.fabSalvarGrupo);
 
         usuariosRef = configuracaoFirebase.getFireBaseDatabase().child("usuarios");
 
