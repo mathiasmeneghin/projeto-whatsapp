@@ -95,6 +95,7 @@ public class ChatActivity extends AppCompatActivity {
 
         //Recupera dados do usuario remetente
         idUsuarioRemetente = UsuarioFirebase.getIdentificadorUsuario();
+        Usuario usuarioRemetente = UsuarioFirebase.getDadosUsuarioLogado();
 
         //Recuperar dados usuario destinatário
         Bundle bundle = getIntent().getExtras();
@@ -217,14 +218,41 @@ public class ChatActivity extends AppCompatActivity {
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
                            String dowloadUrl = taskSnapshot.getDownloadUrl().toString();
-                           Mensagem mensagem = new Mensagem();
-                           mensagem.setIdUsuario(idUsuarioRemetente);
-                           mensagem.setMensagem("imagem.jpeg");
-                           mensagem.setImagem(dowloadUrl);
-                           //Salvar mensagem para o REmetente
-                           SalvarMensagem(idUsuarioRemetente,idUsuarioDestinatario,mensagem);
-                           //Salvar mensagem para o destinatario
-                           SalvarMensagem(idUsuarioDestinatario,idUsuarioRemetente,mensagem);
+
+
+
+                            if(usuarioDestinatario != null) {// mensagem normal
+
+                                Mensagem mensagem = new Mensagem();
+                                mensagem.setIdUsuario(idUsuarioRemetente);
+                                mensagem.setMensagem("imagem.jpeg");
+                                mensagem.setImagem(dowloadUrl);
+                                //Salvar mensagem para o REmetente
+                                SalvarMensagem(idUsuarioRemetente,idUsuarioDestinatario,mensagem);
+                                //Salvar mensagem para o destinatario
+                                SalvarMensagem(idUsuarioDestinatario,idUsuarioRemetente,mensagem);
+
+
+                            }else {// mensagem grupo
+
+                                for(Usuario membro: grupo.getMembros()) {
+                                    Usuario usuarioRemetente = UsuarioFirebase.getDadosUsuarioLogado();
+                                    String idRemetenteGrupo = Base64Custom.codificarBase64(membro.getEmail());
+                                    String idUsuarioLogadoGrupo = UsuarioFirebase.getIdentificadorUsuario();
+                                    Mensagem mensagem = new Mensagem();
+                                    mensagem.setIdUsuario(idUsuarioLogadoGrupo);
+                                    mensagem.setMensagem("imagem.jpg");
+                                    mensagem.setNome(usuarioRemetente.getNome());
+                                    mensagem.setImagem(dowloadUrl);
+
+                                    //Salvar mensagem para o membro
+                                    SalvarMensagem(idRemetenteGrupo,idUsuarioDestinatario,mensagem);
+
+                                    //Salvar conversa
+                                    salvarConversa(idRemetenteGrupo,idUsuarioDestinatario,usuarioDestinatario,mensagem,true);
+                                }
+
+                            }
 
                             Toast.makeText(ChatActivity.this,
                                     "Sucesso ao enviar imagem",
@@ -242,21 +270,47 @@ public class ChatActivity extends AppCompatActivity {
 
     public void enviarMensagem(View view) {
         String textomensagem = editMensagem.getText().toString();
+
         if (!textomensagem.isEmpty()) {
-            Mensagem mensagem = new Mensagem();
-            mensagem.setIdUsuario(idUsuarioRemetente);
-            mensagem.setMensagem(textomensagem);
+
+            if(usuarioDestinatario != null) {
+
+                Mensagem mensagem = new Mensagem();
+                mensagem.setIdUsuario(idUsuarioRemetente);
+                mensagem.setMensagem(textomensagem);
+
+                //Salvar mensagem para o remetente
+                SalvarMensagem(idUsuarioRemetente,idUsuarioDestinatario,mensagem);
+                //Salvar mensagem para o destinatario
+                SalvarMensagem(idUsuarioDestinatario,idUsuarioRemetente,mensagem);
+
+                //Salvar conversa remetente
+                salvarConversa(idUsuarioRemetente,idUsuarioDestinatario,usuarioDestinatario,mensagem,false);
+                //Salvar conversa destinatario
+                Usuario usuarioRemetente = UsuarioFirebase.getDadosUsuarioLogado();
+                salvarConversa(idUsuarioDestinatario,idUsuarioRemetente,usuarioRemetente,mensagem,false);
 
 
+            }else {
+                for(Usuario membro: grupo.getMembros()) {
+                    Usuario usuarioRemetente = UsuarioFirebase.getDadosUsuarioLogado();
+                    String idRemetenteGrupo = Base64Custom.codificarBase64(membro.getEmail());
+                    String idUsuarioLogadoGrupo = UsuarioFirebase.getIdentificadorUsuario();
+                    Mensagem mensagem = new Mensagem();
+                    mensagem.setIdUsuario(idUsuarioLogadoGrupo);
+                    mensagem.setMensagem(textomensagem);
+                    mensagem.setNome(usuarioRemetente.getNome());
+
+                    //Salvar mensagem para o membro
+                    SalvarMensagem(idRemetenteGrupo,idUsuarioDestinatario,mensagem);
+
+                    //Salvar conversa
+                    salvarConversa(idRemetenteGrupo,idUsuarioDestinatario,usuarioDestinatario,mensagem,true);
+                }
+
+            }
 
 
-            //Salvar mensagem para o remetente
-             SalvarMensagem(idUsuarioRemetente,idUsuarioDestinatario,mensagem);
-            //Salvar mensagem para o destinatario
-            SalvarMensagem(idUsuarioDestinatario,idUsuarioRemetente,mensagem);
-
-            //Salvar conversa
-            salvarConversa(mensagem);
 
 
         } else {
@@ -267,14 +321,27 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private void salvarConversa(Mensagem msg) {
+    private void salvarConversa(String idRemetente, String idDestinatario,Usuario usuarioExibicao, Mensagem msg,boolean isGroup) {
         Conversa conversaRemetente = new Conversa();
-        conversaRemetente.setIdRemetente(idUsuarioRemetente);
-        conversaRemetente.setIdDestinatario(idUsuarioDestinatario);
+        conversaRemetente.setIdRemetente(idRemetente);
+        conversaRemetente.setIdDestinatario(idDestinatario);
         conversaRemetente.setUltimaMensagem(msg.getMensagem());
-        conversaRemetente.setUsuarioExibicao(usuarioDestinatario);
 
+        if(isGroup) { //conversa de grupo
+
+            conversaRemetente.setIsGroup("true");
+            conversaRemetente.setGrupo(grupo);
+
+        }else  {// conversa normal
+
+
+            conversaRemetente.setUsuarioExibicao(usuarioExibicao);
+            conversaRemetente.setIsGroup("false");
+
+        }
         conversaRemetente.salvar();
+
+
 
     }
 
@@ -307,6 +374,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
     private void recuperarMensagens() {
+        mensagens.clear();
 
         childEventListenerMensagens = mensagensRef.addChildEventListener(new ChildEventListener() {
             @Override

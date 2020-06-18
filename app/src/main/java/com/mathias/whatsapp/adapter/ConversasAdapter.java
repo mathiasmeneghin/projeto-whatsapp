@@ -30,6 +30,10 @@ public class ConversasAdapter extends RecyclerView.Adapter<ConversasAdapter.MyVi
         this.context = c;
     }
 
+    public List<Conversa> getConversas() {
+        return this.conversas;
+    }
+
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -58,14 +62,21 @@ public class ConversasAdapter extends RecyclerView.Adapter<ConversasAdapter.MyVi
         } else {
 
             Usuario usuario = conversa.getUsuarioExibicao();
-            holder.nome.setText(usuario.getNome());
 
-            if (usuario.getFoto() != null) {
-                Uri uri = Uri.parse(usuario.getFoto());
-                Glide.with(context).load(uri).into(holder.foto);
-            }else {
-                holder.foto.setImageResource(R.drawable.padrao);
+
+            if(usuario != null) {
+                holder.nome.setText(usuario.getNome());
+                if (usuario.getFoto() != null) {
+                    Uri uri = Uri.parse(usuario.getFoto());
+                    Glide.with(context).load(uri).into(holder.foto);
+                }else {
+                    holder.foto.setImageResource(R.drawable.padrao);
+                }
+
             }
+
+
+
 
         }
 

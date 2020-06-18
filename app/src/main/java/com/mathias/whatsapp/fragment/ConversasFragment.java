@@ -74,9 +74,11 @@ public class ConversasFragment extends Fragment {
                     @Override
                     public void onItemClick(View view, int position) {
 
-                        Conversa conversaSelecionada = listaConversas.get(position);
+                        List<Conversa> listaConversaAtualizada = adapter.getConversas();
+                        Conversa conversaSelecionada = listaConversaAtualizada.get(position);
 
                         if(conversaSelecionada.getIsGroup().equals("true")) {
+
                             Intent i = new Intent(getActivity(), ChatActivity.class);
                             i.putExtra("chatGrupo",conversaSelecionada.getGrupo());
                             startActivity(i);
@@ -128,12 +130,27 @@ public class ConversasFragment extends Fragment {
     public void pesquisarCoversas(String texto) {
         //Log.d("pesquisa",texto);
         List<Conversa> listaConversasBusca = new ArrayList<>();
+
+
         for (Conversa conversa : listaConversas) {
-            String nome = conversa.getUsuarioExibicao().getNome().toLowerCase();
-            String ultimaMsg = conversa.getUltimaMensagem().toLowerCase();
-            if (nome.contains(texto) || ultimaMsg.contains(texto)) {
-                listaConversasBusca.add(conversa);
+
+            if(conversa.getUsuarioExibicao() != null ) {
+                String nome = conversa.getUsuarioExibicao().getNome().toLowerCase();
+                String ultimaMsg = conversa.getUltimaMensagem().toLowerCase();
+                if (nome.contains(texto) || ultimaMsg.contains(texto)) {
+                    listaConversasBusca.add(conversa);
+                }
+
+            }else {
+                String nome = conversa.getGrupo().getNome().toLowerCase();
+                String ultimaMsg = conversa.getUltimaMensagem().toLowerCase();
+                if (nome.contains(texto) || ultimaMsg.contains(texto)) {
+                    listaConversasBusca.add(conversa);
+                }
+
             }
+
+
 
         }
        adapter = new ConversasAdapter(listaConversasBusca,getActivity());
@@ -149,6 +166,7 @@ public class ConversasFragment extends Fragment {
 
     public void recuperarConversas() {
 
+        listaConversas.clear();
 
       childEventListenerConversas =  conversasRef.addChildEventListener(new ChildEventListener() {
             @Override

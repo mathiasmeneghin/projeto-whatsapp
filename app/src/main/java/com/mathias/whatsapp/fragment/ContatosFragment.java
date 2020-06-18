@@ -21,12 +21,15 @@ import com.mathias.whatsapp.R;
 import com.mathias.whatsapp.activity.ChatActivity;
 import com.mathias.whatsapp.activity.GrupoActivity;
 import com.mathias.whatsapp.adapter.ContatosAdapter;
+import com.mathias.whatsapp.adapter.ConversasAdapter;
 import com.mathias.whatsapp.config.configuracaoFirebase;
 import com.mathias.whatsapp.helper.RecyclerItemClickListener;
 import com.mathias.whatsapp.helper.UsuarioFirebase;
+import com.mathias.whatsapp.model.Conversa;
 import com.mathias.whatsapp.model.Usuario;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,6 +42,7 @@ public class ContatosFragment extends Fragment {
     private DatabaseReference usuariosRef;
     private ValueEventListener valueEventListenerContatos;
     private FirebaseUser usuarioAtual;
+
 
 
     public ContatosFragment() {
@@ -74,7 +78,9 @@ public class ContatosFragment extends Fragment {
                         new RecyclerItemClickListener.OnItemClickListener() {
                             @Override
                             public void onItemClick(View view, int position) {
-                                Usuario usuarioSelecionado = listaContatos.get(position);
+                                List<Usuario> listaUsuarioAtualizada = adapter.getContatos();
+
+                                Usuario usuarioSelecionado = listaUsuarioAtualizada.get(position);
                                 boolean cabecalho = usuarioSelecionado.getEmail().isEmpty();
 
                                 if (cabecalho) {
@@ -103,16 +109,7 @@ public class ContatosFragment extends Fragment {
                         }
                 )
         );
-        /*
-        Define usuário com e-mail vazio
-        Em caso de email vazio o usuario será usado como cabeçalho, exibindo novo grupo
-         */
-        Usuario itemGrupo = new Usuario();
-        itemGrupo.setNome("Novo Grupo");
-        itemGrupo.setEmail("");
-
-        listaContatos.add(itemGrupo);
-
+       adicionarMenuNovoGrupo();
 
         return view;
     }
@@ -129,6 +126,8 @@ public class ContatosFragment extends Fragment {
         usuariosRef.removeEventListener(valueEventListenerContatos);
     }
 
+
+
     public void recuperarContatos() {
       valueEventListenerContatos = usuariosRef.addValueEventListener(new ValueEventListener() {
 
@@ -136,7 +135,11 @@ public class ContatosFragment extends Fragment {
            @Override
            public void onDataChange(DataSnapshot dataSnapshot) {
 
+               limparListaContatos();
+
                for (DataSnapshot dados: dataSnapshot.getChildren())  {
+
+
 
                    Usuario usuario = dados.getValue(Usuario.class);
 
@@ -159,4 +162,49 @@ public class ContatosFragment extends Fragment {
            }
        });
     }
+
+    public void limparListaContatos() {
+         listaContatos.clear();
+         adicionarMenuNovoGrupo();
+    }
+
+    public void adicionarMenuNovoGrupo() {
+         /*
+        Define usuário com e-mail vazio
+        Em caso de email vazio o usuario será usado como cabeçalho, exibindo novo grupo
+         */
+        Usuario itemGrupo = new Usuario();
+        itemGrupo.setNome("Novo Grupo");
+        itemGrupo.setEmail("");
+
+        listaContatos.add(itemGrupo);
+
+    }
+
+    public void pesquisarContatos(String texto) {
+        //Log.d("pesquisa",texto);
+        List<Usuario> listaContatosBusca = new ArrayList<>();
+
+
+        for (Usuario usuario : listaContatos) {
+
+           String nome = usuario.getNome().toLowerCase();
+           if (nome.contains(texto)) {
+               listaContatosBusca.add(usuario);
+           }
+
+
+
+        }
+        adapter = new ContatosAdapter(listaContatosBusca,getActivity());
+        recyclerViewListaContatos.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void recarregarContatos() {
+        adapter = new ContatosAdapter(listaContatos,getActivity());
+        recyclerViewListaContatos.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
+
 }
